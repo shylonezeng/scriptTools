@@ -15,10 +15,8 @@ MainWindow::MainWindow(QWidget *parent) :
          this,SLOT(updatechat(QString)),Qt::QueuedConnection);
 
 }
-float *Exampleclass::takeme(T *fs)
 
-float *takeme(T *fs);
-double* Exampleclass::connect_to_server()
+void MainWindow::connect_to_server()
 {
     //begin connect to server
 
@@ -33,7 +31,7 @@ double* Exampleclass::connect_to_server()
     pthread_t tid;
     pthread_create(&tid,NULL,&MainWindow::pthread_func,this);
 }
-void Exampleclass::pthread_func(void *arg)
+void *MainWindow::pthread_func(void *EXO::arg)
 {
     return reinterpret_cast<MainWindow*>(arg)->rcv_and_print();
 }
@@ -105,5 +103,6 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
-double Exampleclass::exe(int *arg)
-{}
+void bitfunction(void *hello)
+{
+}

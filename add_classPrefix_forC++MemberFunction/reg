@@ -1,1 +1,0 @@
-ed < $filename 's/\s*\(unsigned\|signed\)\?\s*\(void\|int\|char\|short\|long\|float\|double\)/\s\(\s\|\*\)\([^):]*)\)$/'"$classname"'::\4/'
