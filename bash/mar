@@ -1,0 +1,111 @@
+#!/bin/bash
+# arangsh script, incluing funcition: 
+# 1) login quickly;
+# 2) import data files in current dir or specified file; 
+# 3) drop tables remote; 
+# created by zengxx
+# 2017年 9月23日 星期六 18时36分15秒 CST
+#
+colletion_name_prefix=""  # test_
+
+# arangodb server conf
+host=10.247.16.56
+port=8529
+loginUser=test
+password=test
+
+# default connect database
+db=test_graph
+
+# shell to login onto remote arange db which specified by host and port
+login_shell="arangosh --server.username ${loginUser}  --server.password ${password} --server.endpoint tcp://${host}:${port} --server.database ${db} "
+
+command=$1
+option_1=$2
+
+# map access
+function checkMapFile() {
+	map_dir=/tmp/bash/map
+	if [ -d '/tmp/bash' ];
+	then
+		echo 'file /tmp/bash found'
+	else
+		mkdir /tmp/bash
+	fi
+
+	if [ -d ${map_dir} ];
+	then
+		echo 'file ${map_dir} found'
+	else
+		mkdir ${map_dir}
+	fi
+}
+
+function put2map() {
+	if [[ $# != 2 ]];
+	then
+		echo "error: map access wrong, arguments: $@"
+		exit
+	fi
+
+	echo $2 > ${map_dir}/$1
+	#statements
+}
+
+#checkMapFile
+
+all_files=`ls | grep csv | grep -v temp | grep -v '~' | awk -F '.' '{print $1}'`
+# check if file specified
+if [[ ${option_1} == '--file' ]] || [[ ${option_1} == '-f' ]];
+then
+	all_files=$3
+fi
+echo "files ready to import: "${all_files}
+
+
+# main entry: begin deal all data of files
+for file in ${all_files}
+do
+
+	collection_name=${colletion_name_prefix}${file}
+	command_suffix=""
+
+	if  [[ ${file} == *_relation ]];
+	then
+		#get vertex of _from and _to
+		from_table=${colletion_name_prefix}`echo ${file} | awk -F ':' '{print $1}'`
+		to_table=${colletion_name_prefix}`echo ${file} | awk -F ':' '{print $2}'`
+		collection_name=${colletion_name_prefix}`echo ${file} | awk -F ':' '{print $3}'`
+		command_suffix=" --create-collection-type edge --from-collection-prefix ${from_table}/  --to-collection-prefix "${to_table}/
+	fi
+
+	# deal with command
+	if [[ ${command} == import ]];
+		then
+				# import data to arangodb
+				import_shell="arangoimp --server.username ${loginUser}  --server.password ${password} --server.endpoint tcp://${host}:${port} --server.database ${db} --file ${file}.csv --type csv --collection ${collection_name} --create-collection true"${command_suffix}
+				if [[ ${option_1} == '--fake' ]];
+				then
+					echo "importing data:"${import_shell}
+				else
+					eval ${import_shell}
+				fi
+	elif [[ ${command}  == 'drop' ]];
+		then
+				# drop all tables arangshell
+				drop_shell="\"db._drop('${collection_name}')\""
+				echo ${drop_shell}
+				eval ${login_shell}" --javascript.execute-string "${drop_shell}
+	elif [[ ${command}  == 'login' ]];
+		then
+				# login to arangodb
+				eval ${login_shell}
+	else
+		echo "usage: mar command [optons]"
+		echo "commands: "
+		echo "1) import [--fake | --file files_name ]"
+		echo "2) drop"
+		echo "3) login"
+		break
+	fi
+done
