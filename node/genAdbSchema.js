@@ -7,28 +7,59 @@
 const fs = require('fs');
 const path = require('path');
 
-const sourFile = './temp.jso';
+const sourFile = '/Users/zengxx/repo/work/riskbrain-manager-f2e/temp.json';
 const outputFile = '/Users/zengxx/data/relations/riskcollections.csv';
 const titleLine = '_key,type,name,description,from,to';
+const colorOnlyTitleLine = '_key,color';
+const colorOnly = true;
+
+// to keep no deperated item
+const globalDic = {};
+let count = 0;
+// const colors = ['Red', 'Cyan', 'Blue', 'DarkBlue', 'LightBlue', 'Purple', 'Yellow', 'Lime', 'Magenta', 'Orange',
+// 'Brown', 'Maroon', 'Green', 'Olive', 'Steel Blue', 'Navy Blue', 'Sand', 'Coffee', 'Hot Pink', '',]
+
+const colors = ['#c23531','#2f4554', '#61a0a8', '#d48265', '#91c7ae','#749f83',  '#ca8622', '#bda29a', '#c4ccd3', '#00FFFF',
+    '#0000FF', '#800080', '#FF00FF', '#00FF00', '#FFA500', '#008000', '#808000', '#FFF380', '#FFFF00'
+]
 
 const writeLine2csv = (line) => {
-  console.log('line:' + line);
   if (!line) {
     console.warn('null line, igoned');
   }
+
   fs.appendFileSync(outputFile, line+'\n', {encoding: 'utf8'});
 };
 
 const write2csv = (item) => {
-    if(!item) {
+    if (!item) {
+      return;
+    }
+    if(globalDic[item._key]) {
+      console.warn(`${item._key} existed, ignored`)
       return;
     }
 
-    let line = `${item._key},${item.type},,,`;
-    if (item.from && item.to) {
-      line = line + `${item.from},${item.to}`;
+    // mark as existed
+    globalDic[item._key] = true;
+
+    // add color from color list
+    item['color'] = colors[count];
+    count += 1;
+
+    let line = '';
+    if (colorOnly) { // append color to vertex
+      if (item.type != 2) {
+        return ;
+      }
+      line = `${item._key},${item.color}`
     } else {
-      line = line + ',,'
+      line = `${item._key},${item.type},,,`;
+      if (item.from && item.to) {
+        line = line + `${item.from},${item.to}`;
+      } else {
+        line = line + ','
+      }
     }
 
     //
@@ -80,18 +111,18 @@ if (fs.existsSync(outputFile)) {
   fs.renameSync(outputFile, newFilePath);
 }
 
-fs.readFile('./temp.json',  'utf8', (err, data) => {
+fs.readFile(sourFile,  'utf8', (err, data) => {
       if(err) throw err;
       if(data.error) {
         console.error('http request failed');
       }
 
-      console.warn(data);
       const graphs = JSON.parse(data).graphs;
-      writeLine2csv(titleLine);
+      writeLine2csv( colorOnly ? colorOnlyTitleLine : titleLine);
       append2csvByBatch(pickGraphs(graphs));
       append2csvByBatch(pickVertexes(graphs));
       append2csvByBatch(pickEdges(graphs));
-      console.log(data.grap);
     }
 );
+
+console.warn(`finish writing schema data to ${outputFile}`)
