@@ -7,9 +7,9 @@ item:       add_classprefix.sh [filename ...]
 descption:  add prefix class name for class member functions in specfied  *.cpp files or other files acp, short alias of add_classprefix.sh,should be set before using. you can also use other alias name.
 next command
 
-## enjoy them !
+## frequently-used command
 
 
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/shylonezeng/bashtools/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
+#### java
+- arthas online java debug
+`curl -L https://alibaba.github.io/arthas/install.sh | sh`
