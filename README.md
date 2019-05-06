@@ -12,4 +12,6 @@ next command
 
 #### java
 - arthas online java debug
-`curl -L https://alibaba.github.io/arthas/install.sh | sh`
+```
+curl -L https://alibaba.github.io/arthas/install.sh | sh
+```
